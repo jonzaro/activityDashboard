@@ -1,0 +1,87 @@
+import { LinearTicket } from '../types';
+
+export class LinearService {
+  private token: string;
+  private baseUrl = 'https://api.linear.app/graphql';
+
+  constructor(token: string) {
+    this.token = token;
+  }
+
+  private async request(query: string, variables?: any) {
+    const response = await fetch(this.baseUrl, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${this.token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ query, variables }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Linear API error: ${response.status}`);
+    }
+
+    const result = await response.json();
+    if (result.errors) {
+      throw new Error(`Linear GraphQL error: ${result.errors[0].message}`);
+    }
+
+    return result.data;
+  }
+
+  async getTickets(limit = 50): Promise<LinearTicket[]> {
+    const query = `
+      query GetTickets($first: Int!) {
+        issues(first: $first, orderBy: { field: updatedAt, direction: DESC }) {
+          nodes {
+            id
+            title
+            url
+            createdAt
+            updatedAt
+            description
+            priority
+            state {
+              name
+              type
+            }
+          }
+        }
+      }
+    `;
+
+    try {
+      const data = await this.request(query, { first: limit });
+      
+      return data.issues.nodes.map((issue: any) => ({
+        id: issue.id,
+        title: issue.title,
+        status: this.mapStateToStatus(issue.state.type),
+        date: issue.updatedAt,
+        url: issue.url,
+        description: issue.description,
+        priority: issue.priority?.toLowerCase() || 'medium',
+      }));
+    } catch (error) {
+      console.error('Error fetching Linear tickets:', error);
+      return [];
+    }
+  }
+
+  private mapStateToStatus(stateType: string): LinearTicket['status'] {
+    switch (stateType) {
+      case 'backlog':
+      case 'unstarted':
+        return 'created';
+      case 'started':
+        return 'in_progress';
+      case 'completed':
+        return 'completed';
+      case 'canceled':
+        return 'closed';
+      default:
+        return 'assigned';
+    }
+  }
+}
