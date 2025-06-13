@@ -1,43 +1,51 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { useTheme } from './hooks/useTheme';
-import { useActivityFeed } from './hooks/useActivityFeed';
-import { ActivityCard } from './components/ActivityCard';
-import { FilterBar } from './components/FilterBar';
-import { ConfigModal } from './components/ConfigModal';
-import { LoadingSpinner } from './components/LoadingSpinner';
-import { DashboardConfig, FilterOptions } from './types';
-import { Moon, Sun, Settings, RefreshCw, Activity, AlertTriangle, Github, Ticket } from 'lucide-react';
+import React, { useState, useEffect, useMemo } from "react";
+import { useTheme } from "./hooks/useTheme";
+import { useActivityFeed } from "./hooks/useActivityFeed";
+import { ActivityCard } from "./components/ActivityCard";
+import { FilterBar } from "./components/FilterBar";
+import { ConfigModal } from "./components/ConfigModal";
+import { LoadingSpinner } from "./components/LoadingSpinner";
+import { dashboardConfig } from "./config";
+import { DashboardConfig, FilterOptions } from "./types";
+import {
+  Moon,
+  Sun,
+  Settings,
+  RefreshCw,
+  Activity,
+  AlertTriangle,
+  Github,
+  Ticket,
+} from "lucide-react";
 
 function App() {
   const { theme, toggleTheme } = useTheme();
-  
-  const [config, setConfig] = useState<DashboardConfig>(() => {
-    const saved = localStorage.getItem('dashboardConfig');
-    return saved ? JSON.parse(saved) : {
-      githubToken: '',
-      linearToken: '',
-      repositories: [],
-      refreshInterval: 300000, // 5 minutes
-    };
-  });
+  const [config, setConfig] = useState<DashboardConfig>(dashboardConfig);
 
   const [filters, setFilters] = useState<FilterOptions>({
-    source: 'all',
-    type: 'all',
-    timeRange: 'all',
+    source: "all",
+    type: "all",
+    timeRange: "all",
   });
 
   const [isConfigOpen, setIsConfigOpen] = useState(false);
 
-  const { activities, loading, error, lastFetch, fetchActivities, filterActivities } = useActivityFeed(config);
+  const {
+    activities,
+    loading,
+    error,
+    lastFetch,
+    fetchActivities,
+    filterActivities,
+  } = useActivityFeed(config);
 
-  const filteredActivities = useMemo(() => 
-    filterActivities(activities, filters), 
+  const filteredActivities = useMemo(
+    () => filterActivities(activities, filters),
     [activities, filters, filterActivities]
   );
 
   useEffect(() => {
-    localStorage.setItem('dashboardConfig', JSON.stringify(config));
+    localStorage.setItem("dashboardConfig", JSON.stringify(config));
   }, [config]);
 
   useEffect(() => {
@@ -61,13 +69,14 @@ function App() {
             <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-8">
               <Activity className="w-10 h-10 text-white" />
             </div>
-            
+
             <h1 className="text-4xl font-bold text-gray-900 dark:text-gray-100 mb-4">
               Developer Activity Dashboard
             </h1>
-            
+
             <p className="text-xl text-gray-600 dark:text-gray-400 mb-12">
-              Track your development activity across GitHub and Linear in one beautiful dashboard.
+              Track your development activity across GitHub and Linear in one
+              beautiful dashboard.
             </p>
 
             <div className="grid md:grid-cols-2 gap-8 mb-12">
@@ -77,17 +86,19 @@ function App() {
                   GitHub Integration
                 </h3>
                 <p className="text-gray-600 dark:text-gray-400 text-sm">
-                  View your latest commits, pull requests, and repository activity in real-time.
+                  View your latest commits, pull requests, and repository
+                  activity in real-time.
                 </p>
               </div>
-              
+
               <div className="bg-white/60 dark:bg-gray-800/60 backdrop-blur-sm rounded-2xl p-6 border border-gray-200/50 dark:border-gray-700/50">
                 <Ticket className="w-12 h-12 text-purple-500 mb-4" />
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
                   Linear Integration
                 </h3>
                 <p className="text-gray-600 dark:text-gray-400 text-sm">
-                  Track your issues, tasks, and project progress across all Linear workspaces.
+                  Track your issues, tasks, and project progress across all
+                  Linear workspaces.
                 </p>
               </div>
             </div>
@@ -141,7 +152,9 @@ function App() {
                 className="p-2 text-gray-600 dark:text-gray-400 hover:text-blue-500 dark:hover:text-blue-400 transition-colors disabled:opacity-50"
                 title="Refresh activities"
               >
-                <RefreshCw className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} />
+                <RefreshCw
+                  className={`w-5 h-5 ${loading ? "animate-spin" : ""}`}
+                />
               </button>
 
               <button
@@ -157,7 +170,11 @@ function App() {
                 className="p-2 text-gray-600 dark:text-gray-400 hover:text-blue-500 dark:hover:text-blue-400 transition-colors"
                 title="Toggle theme"
               >
-                {theme === 'light' ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
+                {theme === "light" ? (
+                  <Moon className="w-5 h-5" />
+                ) : (
+                  <Sun className="w-5 h-5" />
+                )}
               </button>
             </div>
           </div>
@@ -177,7 +194,9 @@ function App() {
           <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-4 mb-8">
             <div className="flex items-center space-x-2">
               <AlertTriangle className="w-5 h-5 text-red-500" />
-              <h3 className="font-medium text-red-800 dark:text-red-200">Error</h3>
+              <h3 className="font-medium text-red-800 dark:text-red-200">
+                Error
+              </h3>
             </div>
             <p className="text-red-700 dark:text-red-300 mt-1">{error}</p>
           </div>
@@ -192,10 +211,9 @@ function App() {
               No activities found
             </h3>
             <p className="text-gray-600 dark:text-gray-400 mb-6">
-              {activities.length === 0 
+              {activities.length === 0
                 ? "No activities have been loaded yet. Check your configuration and try refreshing."
-                : "No activities match your current filters. Try adjusting your filter criteria."
-              }
+                : "No activities match your current filters. Try adjusting your filter criteria."}
             </p>
             {activities.length === 0 && (
               <button

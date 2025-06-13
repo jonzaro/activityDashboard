@@ -1,8 +1,8 @@
-import { LinearTicket } from '../types';
+import { LinearTicket } from "../types";
 
 export class LinearService {
   private token: string;
-  private baseUrl = 'https://api.linear.app/graphql';
+  private baseUrl = "/api/linear"; // Use the proxied URL instead
 
   constructor(token: string) {
     this.token = token;
@@ -10,10 +10,10 @@ export class LinearService {
 
   private async request(query: string, variables?: any) {
     const response = await fetch(this.baseUrl, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Authorization': `Bearer ${this.token}`,
-        'Content-Type': 'application/json',
+        Authorization: `Bearer ${this.token}`,
+        "Content-Type": "application/json",
       },
       body: JSON.stringify({ query, variables }),
     });
@@ -33,18 +33,20 @@ export class LinearService {
   async getTickets(limit = 50): Promise<LinearTicket[]> {
     const query = `
       query GetTickets($first: Int!) {
-        issues(first: $first, orderBy: { field: updatedAt, direction: DESC }) {
-          nodes {
-            id
-            title
-            url
-            createdAt
-            updatedAt
-            description
-            priority
-            state {
-              name
-              type
+        viewer {
+          assignedIssues(first: $first, orderBy: updatedAt) {
+            nodes {
+              id
+              title
+              url
+              createdAt
+              updatedAt
+              description
+              priority
+              state {
+                name
+                type
+              }
             }
           }
         }
@@ -53,35 +55,35 @@ export class LinearService {
 
     try {
       const data = await this.request(query, { first: limit });
-      
-      return data.issues.nodes.map((issue: any) => ({
+
+      return data.viewer.assignedIssues.nodes.map((issue: any) => ({
         id: issue.id,
         title: issue.title,
         status: this.mapStateToStatus(issue.state.type),
         date: issue.updatedAt,
         url: issue.url,
         description: issue.description,
-        priority: issue.priority?.toLowerCase() || 'medium',
+        priority: issue.priority?.toLowerCase() || "medium",
       }));
     } catch (error) {
-      console.error('Error fetching Linear tickets:', error);
+      console.error("Error fetching Linear tickets:", error);
       return [];
     }
   }
 
-  private mapStateToStatus(stateType: string): LinearTicket['status'] {
+  private mapStateToStatus(stateType: string): LinearTicket["status"] {
     switch (stateType) {
-      case 'backlog':
-      case 'unstarted':
-        return 'created';
-      case 'started':
-        return 'in_progress';
-      case 'completed':
-        return 'completed';
-      case 'canceled':
-        return 'closed';
+      case "backlog":
+      case "unstarted":
+        return "created";
+      case "started":
+        return "in_progress";
+      case "completed":
+        return "completed";
+      case "canceled":
+        return "closed";
       default:
-        return 'assigned';
+        return "assigned";
     }
   }
 }
