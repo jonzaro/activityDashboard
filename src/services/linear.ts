@@ -12,14 +12,18 @@ export class LinearService {
     const response = await fetch(this.baseUrl, {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${this.token}`,
+        Authorization: this.token, // Remove the Bearer prefix
         "Content-Type": "application/json",
+        // Keep these headers to prevent CSRF protection
+        "x-apollo-operation-name": "GetTickets",
+        "apollo-require-preflight": "true",
       },
       body: JSON.stringify({ query, variables }),
     });
 
     if (!response.ok) {
-      throw new Error(`Linear API error: ${response.status}`);
+      const errorText = await response.text();
+      throw new Error(`Linear API error (${response.status}): ${errorText}`);
     }
 
     const result = await response.json();
@@ -63,7 +67,7 @@ export class LinearService {
         date: issue.updatedAt,
         url: issue.url,
         description: issue.description,
-        priority: issue.priority?.toLowerCase() || "medium",
+        priority: issue.priority || "medium",
       }));
     } catch (error) {
       console.error("Error fetching Linear tickets:", error);
