@@ -59,7 +59,8 @@ function App() {
     setConfig(newConfig);
   };
 
-  const isConfigured = config.githubToken || config.linearToken;
+  // Force the app to consider itself configured by setting this to true
+  const isConfigured = true; // Previously: config.githubToken || config.linearToken;
 
   if (!isConfigured) {
     return (
@@ -238,12 +239,12 @@ function App() {
         )}
       </main>
 
-      <ConfigModal
+      {/* <ConfigModal
         isOpen={isConfigOpen}
         onClose={() => setIsConfigOpen(false)}
         config={config}
         onConfigChange={handleConfigChange}
-      />
+      /> */}
     </div>
   );
 }

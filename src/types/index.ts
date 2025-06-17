@@ -13,25 +13,23 @@ export interface GitHubCommit {
 export interface LinearTicket {
   id: string;
   title: string;
-  status: 'created' | 'assigned' | 'in_progress' | 'completed' | 'closed';
+  status: "created" | "assigned" | "in_progress" | "completed" | "closed";
   date: string;
   url: string;
   description?: string;
-  priority: 'low' | 'medium' | 'high' | 'urgent';
+  priority: "low" | "medium" | "high" | "urgent";
 }
 
 export interface ActivityItem {
   id: string;
-  type: 'commit' | 'ticket';
-  source: 'github' | 'linear';
+  source: "github" | "linear";
   timestamp: string;
   data: GitHubCommit | LinearTicket;
 }
 
 export interface FilterOptions {
-  source: 'all' | 'github' | 'linear';
-  type: 'all' | 'commit' | 'ticket';
-  timeRange: 'all' | '24h' | '7d' | '30d';
+  source: "all" | "github" | "linear";
+  timeRange: "all" | "24h" | "7d" | "30d";
 }
 
 export interface DashboardConfig {
