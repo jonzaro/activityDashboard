@@ -29,6 +29,7 @@ export interface ActivityItem {
 }
 
 export interface FilterOptions {
+  type: string;
   source: "all" | "github" | "linear";
   timeRange: "all" | "24h" | "7d" | "30d";
 }

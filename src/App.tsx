@@ -46,7 +46,7 @@ function App() {
 
   const [filters, setFilters] = useState<FilterOptions>({
     source: "all",
-
+    type: "all", // Add this missing property
     timeRange: "all",
   });
 
