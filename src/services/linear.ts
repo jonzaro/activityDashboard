@@ -32,7 +32,12 @@ export class LinearService {
     }
 
     const result = await response.json();
+
+    // Add debugging
+    console.log("Linear API response:", result);
+
     if (result.errors) {
+      console.error("Linear GraphQL errors:", result.errors);
       throw new Error(`Linear GraphQL error: ${result.errors[0].message}`);
     }
 
@@ -65,15 +70,30 @@ export class LinearService {
     try {
       const data = await this.request(query, { first: limit });
 
-      return data.viewer.assignedIssues.nodes.map((issue: any) => ({
+      // Add debugging
+      console.log("Linear data received:", data);
+      console.log(
+        "Issues found:",
+        data?.viewer?.assignedIssues?.nodes?.length || 0
+      );
+
+      if (!data?.viewer?.assignedIssues?.nodes) {
+        console.warn("No Linear issues found in response");
+        return [];
+      }
+
+      const tickets = data.viewer.assignedIssues.nodes.map((issue: any) => ({
         id: issue.id,
         title: issue.title,
         status: this.mapStateToStatus(issue.state.type),
         date: issue.updatedAt,
         url: issue.url,
         description: issue.description,
-        priority: issue.priority || "medium",
+        priority: this.mapPriorityToTicketPriority(issue.priority),
       }));
+
+      console.log("Mapped Linear tickets:", tickets);
+      return tickets;
     } catch (error) {
       console.error("Error fetching Linear tickets:", error);
       return [];
@@ -93,6 +113,26 @@ export class LinearService {
         return "closed";
       default:
         return "assigned";
+    }
+  }
+
+  private mapPriorityToTicketPriority(
+    priority: number | null
+  ): LinearTicket["priority"] {
+    if (priority === null || priority === undefined) return "medium";
+
+    switch (priority) {
+      case 0:
+        return "low";
+      case 1:
+        return "medium";
+      case 2:
+        return "high";
+      case 3:
+      case 4:
+        return "urgent";
+      default:
+        return "medium";
     }
   }
 }

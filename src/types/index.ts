@@ -23,6 +23,7 @@ export interface LinearTicket {
 export interface ActivityItem {
   id: string;
   source: "github" | "linear";
+  type: "commit" | "ticket"; // Make sure this line exists
   timestamp: string;
   data: GitHubCommit | LinearTicket;
 }
