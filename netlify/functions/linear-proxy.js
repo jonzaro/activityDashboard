@@ -7,10 +7,14 @@ exports.handler = async function (event) {
   }
 
   try {
+    // Use the token from environment variables if no Authorization header
+    const authHeader =
+      event.headers.authorization || process.env.VITE_LINEAR_TOKEN;
+
     const response = await fetch("https://api.linear.app/graphql", {
       method: "POST",
       headers: {
-        Authorization: event.headers.authorization,
+        Authorization: authHeader,
         "Content-Type": "application/json",
       },
       body: event.body,
@@ -19,9 +23,12 @@ exports.handler = async function (event) {
     const data = await response.json();
 
     return {
-      statusCode: response.status,
+      statusCode: response.status || 200,
       body: JSON.stringify(data),
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": "*", // Add CORS headers
+      },
     };
   } catch (error) {
     return {

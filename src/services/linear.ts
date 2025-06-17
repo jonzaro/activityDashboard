@@ -12,12 +12,17 @@ export class LinearService {
   }
 
   private async request(query: string, variables?: any) {
+    // Don't send headers if using the proxy in production, as the proxy will use environment variables
+    const headers = import.meta.env.PROD
+      ? { "Content-Type": "application/json" }
+      : {
+          Authorization: this.token, // Send token for dev environment
+          "Content-Type": "application/json",
+        };
+
     const response = await fetch(this.baseUrl, {
       method: "POST",
-      headers: {
-        Authorization: this.token, // Send token without Bearer prefix
-        "Content-Type": "application/json",
-      },
+      headers,
       body: JSON.stringify({ query, variables }),
     });
 

@@ -2,3 +2,9 @@
   command = "npm run build"
   publish = "dist"
   functions = "netlify/functions"
+
+# Add redirects for API proxying in production
+[[redirects]]
+  from = "/.netlify/functions/linear-proxy"
+  to = "/.netlify/functions/linear-proxy"
+  status = 200

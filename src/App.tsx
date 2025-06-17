@@ -20,7 +20,18 @@ import {
 
 function App() {
   const { theme, toggleTheme } = useTheme();
-  const [config, setConfig] = useState<DashboardConfig>(dashboardConfig);
+
+  // Initialize config from dashboardConfig but allow for local storage overrides
+  const [config, setConfig] = useState<DashboardConfig>(() => {
+    try {
+      const savedConfig = localStorage.getItem("dashboardConfig");
+      return savedConfig
+        ? { ...dashboardConfig, ...JSON.parse(savedConfig) }
+        : dashboardConfig;
+    } catch (e) {
+      return dashboardConfig;
+    }
+  });
 
   const [filters, setFilters] = useState<FilterOptions>({
     source: "all",
@@ -59,7 +70,7 @@ function App() {
     setConfig(newConfig);
   };
 
-  // Force the app to consider itself configured by setting this to true
+  // Always consider the app configured for public viewing
   const isConfigured = true; // Previously: config.githubToken || config.linearToken;
 
   if (!isConfigured) {
