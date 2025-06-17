@@ -10,7 +10,6 @@ import { DashboardConfig, FilterOptions } from "./types";
 import {
   Moon,
   Sun,
-  Settings,
   RefreshCw,
   Activity,
   AlertTriangle,
@@ -20,18 +19,6 @@ import {
 
 function App() {
   const { theme, toggleTheme } = useTheme();
-
-  // Debug environment variables (remove this after debugging)
-  useEffect(() => {
-    console.log("Environment variables check:", {
-      hasGithubToken: !!import.meta.env.VITE_GITHUB_TOKEN,
-      hasLinearToken: !!import.meta.env.VITE_LINEAR_TOKEN,
-      repositories: import.meta.env.VITE_REPOSITORIES,
-      refreshInterval: import.meta.env.VITE_REFRESH_INTERVAL,
-      isProd: import.meta.env.PROD,
-    });
-    console.log("Dashboard config:", config);
-  }, [config]);
 
   // Initialize config from dashboardConfig but allow for local storage overrides
   const [config, setConfig] = useState<DashboardConfig>(() => {
@@ -44,6 +31,18 @@ function App() {
       return dashboardConfig;
     }
   });
+
+  // Debug environment variables (remove this after debugging)
+  useEffect(() => {
+    console.log("Environment variables check:", {
+      hasGithubToken: !!import.meta.env.VITE_GITHUB_TOKEN,
+      hasLinearToken: !!import.meta.env.VITE_LINEAR_TOKEN,
+      repositories: import.meta.env.VITE_REPOSITORIES,
+      refreshInterval: import.meta.env.VITE_REFRESH_INTERVAL,
+      isProd: import.meta.env.PROD,
+    });
+    console.log("Dashboard config:", config);
+  }, [config]);
 
   const [filters, setFilters] = useState<FilterOptions>({
     source: "all",

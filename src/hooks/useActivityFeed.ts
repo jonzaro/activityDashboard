@@ -142,3 +142,9 @@ export const useActivityFeed = (config: DashboardConfig) => {
     filterActivities,
   };
 };
+
+export interface FilterOptions {
+  source: "all" | "github" | "linear";
+  type: "all" | "commit" | "ticket";
+  timeRange: "all" | "24h" | "7d" | "30d";
+}
