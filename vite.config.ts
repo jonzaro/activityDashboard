@@ -2,29 +2,10 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 
 export default defineConfig({
-  plugins: [
-    react(),
-    {
-      name: "global-polyfill",
-      transformIndexHtml() {
-        return [
-          {
-            tag: "script",
-            attrs: { type: "module" },
-            children: `
-              if (typeof window !== 'undefined') {
-                window.global = window;
-                window.process = window.process || { env: {} };
-                window.Buffer = window.Buffer || require('buffer').Buffer;
-                window.util = window.util || { inherits: function() {} };
-              }
-            `,
-            injectTo: "head-prepend",
-          },
-        ];
-      },
-    },
-  ],
+  plugins: [react()],
+  define: {
+    global: "globalThis",
+  },
   optimizeDeps: {
     esbuildOptions: {
       define: {
@@ -35,6 +16,7 @@ export default defineConfig({
   resolve: {
     alias: {
       process: "process/browser",
+      buffer: "buffer",
       util: "util",
     },
   },
