@@ -24,7 +24,7 @@ function App() {
 
   const [filters, setFilters] = useState<FilterOptions>({
     source: "all",
-    type: "all",
+
     timeRange: "all",
   });
 
@@ -104,13 +104,13 @@ function App() {
               </div>
             </div>
 
-            <button
+            {/* <button
               onClick={() => setIsConfigOpen(true)}
               className="inline-flex items-center space-x-3 px-8 py-4 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-semibold rounded-xl hover:from-blue-600 hover:to-purple-700 transition-all duration-200 shadow-lg shadow-blue-500/25 hover:shadow-xl hover:shadow-blue-500/30 transform hover:scale-105"
             >
               <Settings className="w-5 h-5" />
               <span>Get Started - Configure Integrations</span>
-            </button>
+            </button> */}
           </div>
         </div>
 
@@ -158,13 +158,13 @@ function App() {
                 />
               </button>
 
-              <button
+              {/* <button
                 onClick={() => setIsConfigOpen(true)}
                 className="p-2 text-gray-600 dark:text-gray-400 hover:text-blue-500 dark:hover:text-blue-400 transition-colors"
                 title="Settings"
               >
                 <Settings className="w-5 h-5" />
-              </button>
+              </button> */}
 
               <button
                 onClick={toggleTheme}
@@ -216,7 +216,7 @@ function App() {
                 ? "No activities have been loaded yet. Check your configuration and try refreshing."
                 : "No activities match your current filters. Try adjusting your filter criteria."}
             </p>
-            {activities.length === 0 && (
+            {/* {activities.length === 0 && (
               <button
                 onClick={() => setIsConfigOpen(true)}
                 className="inline-flex items-center space-x-2 px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
@@ -224,7 +224,7 @@ function App() {
                 <Settings className="w-4 h-4" />
                 <span>Configure Integrations</span>
               </button>
-            )}
+            )} */}
           </div>
         )}
 
