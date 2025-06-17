@@ -45,7 +45,7 @@ export class GitHubService {
             limit / repositories.length
           )}&author=${this.username}`
         );
-
+        // Check if data is an array
         const repoCommits: GitHubCommit[] = data.map((commit: any) => ({
           id: commit.sha,
           message: commit.commit.message.split("\n")[0], // First line only
