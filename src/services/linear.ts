@@ -33,9 +33,6 @@ export class LinearService {
 
     const result = await response.json();
 
-    // Add debugging
-    console.log("Linear API response:", result);
-
     if (result.errors) {
       console.error("Linear GraphQL errors:", result.errors);
       throw new Error(`Linear GraphQL error: ${result.errors[0].message}`);
@@ -70,13 +67,6 @@ export class LinearService {
     try {
       const data = await this.request(query, { first: limit });
 
-      // Add debugging
-      console.log("Linear data received:", data);
-      console.log(
-        "Issues found:",
-        data?.viewer?.assignedIssues?.nodes?.length || 0
-      );
-
       if (!data?.viewer?.assignedIssues?.nodes) {
         console.warn("No Linear issues found in response");
         return [];
@@ -92,7 +82,6 @@ export class LinearService {
         priority: this.mapPriorityToTicketPriority(issue.priority),
       }));
 
-      console.log("Mapped Linear tickets:", tickets);
       return tickets;
     } catch (error) {
       console.error("Error fetching Linear tickets:", error);

@@ -16,7 +16,6 @@ export const useActivityFeed = (config: DashboardConfig) => {
   const [lastFetch, setLastFetch] = useState<Date | null>(null);
 
   const fetchActivities = useCallback(async () => {
-    console.log("Fetching activities with config:", config);
     setLoading(true);
     setError(null);
 
@@ -25,11 +24,8 @@ export const useActivityFeed = (config: DashboardConfig) => {
 
       // Fetch GitHub commits
       if (config.githubToken && config.repositories.length > 0) {
-        console.log("Fetching GitHub commits...");
         const githubService = new GitHubService(config.githubToken);
         const commits = await githubService.getCommits(config.repositories);
-
-        console.log("GitHub commits received:", commits.length);
 
         const githubActivities: ActivityItem[] = commits.map((commit) => ({
           id: `github-${commit.id}`,
@@ -44,11 +40,8 @@ export const useActivityFeed = (config: DashboardConfig) => {
 
       // Fetch Linear tickets
       if (config.linearToken) {
-        console.log("Fetching Linear tickets...");
         const linearService = new LinearService(config.linearToken);
         const tickets = await linearService.getTickets();
-
-        console.log("Linear tickets received:", tickets.length);
 
         const linearActivities: ActivityItem[] = tickets.map((ticket) => ({
           id: `linear-${ticket.id}`,
@@ -66,12 +59,6 @@ export const useActivityFeed = (config: DashboardConfig) => {
         (a, b) =>
           new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
       );
-
-      console.log("Total activities processed:", allActivities.length);
-      console.log("Activities breakdown:", {
-        github: allActivities.filter((a) => a.source === "github").length,
-        linear: allActivities.filter((a) => a.source === "linear").length,
-      });
 
       setActivities(allActivities);
       setLastFetch(new Date());

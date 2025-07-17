@@ -22,17 +22,6 @@ exports.handler = async function (event) {
 
     const data = await response.json();
 
-    // Add this to see what's coming back from Linear API
-    console.log("Linear API response structure:", 
-      JSON.stringify({
-        hasData: !!data,
-        hasErrors: !!data.errors,
-        hasViewer: !!data.data?.viewer,
-        hasIssues: !!data.data?.viewer?.assignedIssues,
-        issueCount: data.data?.viewer?.assignedIssues?.nodes?.length || 0
-      })
-    );
-
     return {
       statusCode: response.status || 200,
       body: JSON.stringify(data),
