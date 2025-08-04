@@ -5,6 +5,19 @@ Ideal for real-time data visualizations, analytics, and clean UI component-drive
 
 ---
 
+## 🎯 Purpose
+
+The **Activity Dashboard** is designed to integrate with [Linear](https://linear.app), a modern issue-tracking system.  
+Its core functionality is to:
+
+- Authenticate and connect to the Linear API
+- Retrieve all tasks assigned to the authenticated user
+- Display those tasks in an organized, real-time dashboard interface
+
+This tool helps developers and teams maintain visibility over their current workload by centralizing actionable tasks into a single, focused interface.
+
+---
+
 ## 🚀 Tech Stack
 
 | Stack | Description |
