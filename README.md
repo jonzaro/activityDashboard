@@ -4,7 +4,7 @@ A modern, fast, and responsive activity dashboard built with **React**, **TypeSc
 Ideal for real-time data visualizations, analytics, and clean UI component-driven layouts.
 
 
-[Live Demo Site](harmonious-dragon-09a47b.netlify.app)
+[Live Demo Site](https://harmonious-dragon-09a47b.netlify.app)
 
 
 ---
