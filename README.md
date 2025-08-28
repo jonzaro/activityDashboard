@@ -3,6 +3,10 @@
 A modern, fast, and responsive activity dashboard built with **React**, **TypeScript**, **Vite**, and **Tailwind CSS**.  
 Ideal for real-time data visualizations, analytics, and clean UI component-driven layouts.
 
+
+[Live Demo Site](harmonious-dragon-09a47b.netlify.app)
+
+
 ---
 
 ## 🎯 Purpose
