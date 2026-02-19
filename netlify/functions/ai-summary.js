@@ -1,7 +1,20 @@
+const CORS_HEADERS = {
+  "Content-Type": "application/json",
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "Content-Type",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+};
+
 exports.handler = async function (event) {
+  // Handle CORS preflight
+  if (event.httpMethod === "OPTIONS") {
+    return { statusCode: 204, headers: CORS_HEADERS, body: "" };
+  }
+
   if (event.httpMethod !== "POST") {
     return {
       statusCode: 405,
+      headers: CORS_HEADERS,
       body: JSON.stringify({ error: "Method Not Allowed" }),
     };
   }
@@ -12,6 +25,7 @@ exports.handler = async function (event) {
   if (!githubToken || !anthropicKey) {
     return {
       statusCode: 500,
+      headers: CORS_HEADERS,
       body: JSON.stringify({ error: "Missing required environment variables" }),
     };
   }
@@ -22,6 +36,7 @@ exports.handler = async function (event) {
   } catch {
     return {
       statusCode: 400,
+      headers: CORS_HEADERS,
       body: JSON.stringify({ error: "Invalid JSON body" }),
     };
   }
@@ -30,6 +45,7 @@ exports.handler = async function (event) {
   if (!type || !repository || !identifier) {
     return {
       statusCode: 400,
+      headers: CORS_HEADERS,
       body: JSON.stringify({ error: "Missing required fields: type, repository, identifier" }),
     };
   }
@@ -77,6 +93,7 @@ exports.handler = async function (event) {
     } else {
       return {
         statusCode: 400,
+        headers: CORS_HEADERS,
         body: JSON.stringify({ error: "Invalid type. Must be 'commit' or 'pr'" }),
       };
     }
@@ -85,11 +102,8 @@ exports.handler = async function (event) {
     if (!diffText.trim()) {
       return {
         statusCode: 200,
+        headers: CORS_HEADERS,
         body: JSON.stringify({ summary: "Merge commit with no direct code changes. This commit integrates work from another branch." }),
-        headers: {
-          "Content-Type": "application/json",
-          "Access-Control-Allow-Origin": "*",
-        },
       };
     }
 
@@ -121,6 +135,7 @@ exports.handler = async function (event) {
     if (claudeData.error) {
       return {
         statusCode: 500,
+        headers: CORS_HEADERS,
         body: JSON.stringify({ error: claudeData.error.message }),
       };
     }
@@ -129,15 +144,13 @@ exports.handler = async function (event) {
 
     return {
       statusCode: 200,
+      headers: CORS_HEADERS,
       body: JSON.stringify({ summary }),
-      headers: {
-        "Content-Type": "application/json",
-        "Access-Control-Allow-Origin": "*",
-      },
     };
   } catch (error) {
     return {
       statusCode: 500,
+      headers: CORS_HEADERS,
       body: JSON.stringify({ error: error.message }),
     };
   }
