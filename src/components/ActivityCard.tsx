@@ -1,12 +1,39 @@
 import React from 'react';
 import { ActivityItem, GitHubCommit, GitHubMerge, LinearTicket } from '../types';
 import { GitBranch, GitMerge, Ticket, ExternalLink, Calendar, User } from 'lucide-react';
+import { useAISummary } from '../hooks/useAISummary';
 
 interface ActivityCardProps {
   activity: ActivityItem;
 }
 
+const SummaryText: React.FC<{ summary: string | null; loading: boolean }> = ({ summary, loading }) => {
+  if (loading) {
+    return (
+      <p className="text-xs text-gray-400 dark:text-gray-500 italic animate-pulse mt-1 mb-1">
+        Generating summary...
+      </p>
+    );
+  }
+  if (!summary) return null;
+  return (
+    <p className="text-xs text-gray-600 dark:text-gray-300 mt-1 mb-1 line-clamp-2">
+      {summary}
+    </p>
+  );
+};
+
 export const ActivityCard: React.FC<ActivityCardProps> = ({ activity }) => {
+  const summaryType = activity.type === 'commit' ? 'commit' : activity.type === 'merge' ? 'pr' : null;
+  const summaryRepo = (activity.data as GitHubCommit | GitHubMerge).repository || '';
+  const summaryId = activity.type === 'commit'
+    ? (activity.data as GitHubCommit).id
+    : activity.type === 'merge'
+      ? String((activity.data as GitHubMerge).number)
+      : '';
+
+  const { summary, loading } = useAISummary(summaryType, summaryRepo, summaryId);
+
   const formatDate = (timestamp: string) => {
     const date = new Date(timestamp);
     const now = new Date();
@@ -44,6 +71,8 @@ export const ActivityCard: React.FC<ActivityCardProps> = ({ activity }) => {
               <ExternalLink className="w-4 h-4 text-gray-400 hover:text-blue-500" />
             </a>
           </div>
+
+          <SummaryText summary={summary} loading={loading} />
 
           <div className="flex items-center space-x-4 text-xs text-gray-500 dark:text-gray-400">
             <div className="flex items-center space-x-1">
@@ -87,6 +116,8 @@ export const ActivityCard: React.FC<ActivityCardProps> = ({ activity }) => {
               <ExternalLink className="w-4 h-4 text-gray-400 hover:text-green-500" />
             </a>
           </div>
+
+          <SummaryText summary={summary} loading={loading} />
 
           <div className="flex items-center space-x-4 text-xs text-gray-500 dark:text-gray-400">
             <div className="flex items-center space-x-1">

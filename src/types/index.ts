@@ -4,6 +4,7 @@ export interface GitHubCommit {
   timestamp: string;
   repository: string;
   url: string;
+  summary?: string;
   author: {
     name: string;
     avatar?: string;
@@ -17,6 +18,7 @@ export interface GitHubMerge {
   repository: string;
   url: string;
   number: number;
+  summary?: string;
   author: {
     name: string;
     avatar?: string;
