@@ -6,10 +6,10 @@ const getRepositories = (): string[] => {
   return repoEnv.split(",").map((repo) => repo.trim()).filter((repo) => repo.length > 0);
 };
 
-// Get refresh interval with fallback to 30 seconds
+// Get refresh interval with fallback to 24 hours
 const getRefreshInterval = (): number => {
   const interval = Number(import.meta.env.VITE_REFRESH_INTERVAL);
-  return !isNaN(interval) ? interval : 30000;
+  return !isNaN(interval) ? interval : 86400000;
 };
 
 export const dashboardConfig: DashboardConfig = {
