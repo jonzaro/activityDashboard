@@ -3,7 +3,7 @@ import { DashboardConfig } from "./types";
 // Parse comma-separated repositories from environment variable
 const getRepositories = (): string[] => {
   const repoEnv = import.meta.env.VITE_REPOSITORIES || "";
-  return repoEnv.split(",").filter((repo) => repo.trim().length > 0);
+  return repoEnv.split(",").map((repo) => repo.trim()).filter((repo) => repo.length > 0);
 };
 
 // Get refresh interval with fallback to 30 seconds
