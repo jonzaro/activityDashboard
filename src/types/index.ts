@@ -10,6 +10,19 @@ export interface GitHubCommit {
   };
 }
 
+export interface GitHubMerge {
+  id: string;
+  title: string;
+  timestamp: string;
+  repository: string;
+  url: string;
+  number: number;
+  author: {
+    name: string;
+    avatar?: string;
+  };
+}
+
 export interface LinearTicket {
   id: string;
   title: string;
@@ -23,9 +36,9 @@ export interface LinearTicket {
 export interface ActivityItem {
   id: string;
   source: "github" | "linear";
-  type: "commit" | "ticket"; // Make sure this line exists
+  type: "commit" | "merge" | "ticket";
   timestamp: string;
-  data: GitHubCommit | LinearTicket;
+  data: GitHubCommit | GitHubMerge | LinearTicket;
 }
 
 export interface FilterOptions {

@@ -8,3 +8,8 @@
   from = "/.netlify/functions/linear-proxy"
   to = "/.netlify/functions/linear-proxy"
   status = 200
+
+[[redirects]]
+  from = "/.netlify/functions/github-proxy"
+  to = "/.netlify/functions/github-proxy"
+  status = 200

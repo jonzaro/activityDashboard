@@ -3,8 +3,6 @@ import {
   ActivityItem,
   FilterOptions,
   DashboardConfig,
-  GitHubCommit,
-  LinearTicket,
 } from "../types";
 import { GitHubService } from "../services/github";
 import { LinearService } from "../services/linear";
@@ -22,12 +20,16 @@ export const useActivityFeed = (config: DashboardConfig) => {
     try {
       const allActivities: ActivityItem[] = [];
 
-      // Fetch GitHub commits
-      if (config.githubToken && config.repositories.length > 0) {
-        const githubService = new GitHubService(config.githubToken);
-        const commits = await githubService.getCommits(config.repositories);
+      // Fetch GitHub commits and merges (proxy handles auth server-side)
+      if (config.repositories.length > 0) {
+        const githubService = new GitHubService();
 
-        const githubActivities: ActivityItem[] = commits.map((commit) => ({
+        const [commits, merges] = await Promise.all([
+          githubService.getCommits(config.repositories),
+          githubService.getMergedPRs(config.repositories),
+        ]);
+
+        const commitActivities: ActivityItem[] = commits.map((commit) => ({
           id: `github-${commit.id}`,
           type: "commit",
           source: "github",
@@ -35,7 +37,15 @@ export const useActivityFeed = (config: DashboardConfig) => {
           data: commit,
         }));
 
-        allActivities.push(...githubActivities);
+        const mergeActivities: ActivityItem[] = merges.map((merge) => ({
+          id: `github-merge-${merge.id}`,
+          type: "merge",
+          source: "github",
+          timestamp: merge.timestamp,
+          data: merge,
+        }));
+
+        allActivities.push(...commitActivities, ...mergeActivities);
       }
 
       // Fetch Linear tickets
@@ -129,9 +139,3 @@ export const useActivityFeed = (config: DashboardConfig) => {
     filterActivities,
   };
 };
-
-export interface FilterOptions {
-  source: "all" | "github" | "linear";
-  type: "all" | "commit" | "ticket";
-  timeRange: "all" | "24h" | "7d" | "30d";
-}

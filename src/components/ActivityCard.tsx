@@ -1,6 +1,6 @@
 import React from 'react';
-import { ActivityItem, GitHubCommit, LinearTicket } from '../types';
-import { GitBranch, Ticket, ExternalLink, Calendar, User } from 'lucide-react';
+import { ActivityItem, GitHubCommit, GitHubMerge, LinearTicket } from '../types';
+import { GitBranch, GitMerge, Ticket, ExternalLink, Calendar, User } from 'lucide-react';
 
 interface ActivityCardProps {
   activity: ActivityItem;
@@ -29,7 +29,7 @@ export const ActivityCard: React.FC<ActivityCardProps> = ({ activity }) => {
         <div className="flex-shrink-0 w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
           <GitBranch className="w-5 h-5 text-white" />
         </div>
-        
+
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between mb-2">
             <h3 className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
@@ -44,7 +44,7 @@ export const ActivityCard: React.FC<ActivityCardProps> = ({ activity }) => {
               <ExternalLink className="w-4 h-4 text-gray-400 hover:text-blue-500" />
             </a>
           </div>
-          
+
           <div className="flex items-center space-x-4 text-xs text-gray-500 dark:text-gray-400">
             <div className="flex items-center space-x-1">
               <User className="w-3 h-3" />
@@ -55,10 +55,54 @@ export const ActivityCard: React.FC<ActivityCardProps> = ({ activity }) => {
               <span>{formatDate(commit.timestamp)}</span>
             </div>
           </div>
-          
+
           <div className="mt-2">
             <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400">
               {commit.repository.split('/').pop()}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderMergeCard = (merge: GitHubMerge) => (
+    <div className="group relative overflow-hidden rounded-xl bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border border-gray-200/50 dark:border-gray-700/50 p-6 transition-all duration-300 hover:bg-white/90 dark:hover:bg-gray-800/90 hover:shadow-lg hover:shadow-green-500/10 hover:border-green-300/50 dark:hover:border-green-600/50">
+      <div className="flex items-start space-x-4">
+        <div className="flex-shrink-0 w-10 h-10 bg-gradient-to-br from-green-500 to-teal-600 rounded-full flex items-center justify-center">
+          <GitMerge className="w-5 h-5 text-white" />
+        </div>
+
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center justify-between mb-2">
+            <h3 className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
+              {merge.title}
+            </h3>
+            <a
+              href={merge.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+            >
+              <ExternalLink className="w-4 h-4 text-gray-400 hover:text-green-500" />
+            </a>
+          </div>
+
+          <div className="flex items-center space-x-4 text-xs text-gray-500 dark:text-gray-400">
+            <div className="flex items-center space-x-1">
+              <User className="w-3 h-3" />
+              <span>{merge.author.name}</span>
+            </div>
+            <div className="flex items-center space-x-1">
+              <Calendar className="w-3 h-3" />
+              <span>{formatDate(merge.timestamp)}</span>
+            </div>
+            <span className="text-gray-400 dark:text-gray-500">#{merge.number}</span>
+          </div>
+
+          <div className="mt-2">
+            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
+              {merge.repository.split('/').pop()}
             </span>
           </div>
         </div>
@@ -88,7 +132,7 @@ export const ActivityCard: React.FC<ActivityCardProps> = ({ activity }) => {
           <div className="flex-shrink-0 w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-600 rounded-full flex items-center justify-center">
             <Ticket className="w-5 h-5 text-white" />
           </div>
-          
+
           <div className="flex-1 min-w-0">
             <div className="flex items-center justify-between mb-2">
               <h3 className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
@@ -103,13 +147,13 @@ export const ActivityCard: React.FC<ActivityCardProps> = ({ activity }) => {
                 <ExternalLink className="w-4 h-4 text-gray-400 hover:text-purple-500" />
               </a>
             </div>
-            
+
             {ticket.description && (
               <p className="text-xs text-gray-600 dark:text-gray-300 mb-3 line-clamp-2">
                 {ticket.description}
               </p>
             )}
-            
+
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
                 <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusColors[ticket.status]}`}>
@@ -119,7 +163,7 @@ export const ActivityCard: React.FC<ActivityCardProps> = ({ activity }) => {
                   {ticket.priority}
                 </span>
               </div>
-              
+
               <div className="flex items-center space-x-1 text-xs text-gray-500 dark:text-gray-400">
                 <Calendar className="w-3 h-3" />
                 <span>{formatDate(ticket.date)}</span>
@@ -131,7 +175,11 @@ export const ActivityCard: React.FC<ActivityCardProps> = ({ activity }) => {
     );
   };
 
-  return activity.type === 'commit' 
-    ? renderCommitCard(activity.data as GitHubCommit)
-    : renderTicketCard(activity.data as LinearTicket);
+  if (activity.type === 'commit') {
+    return renderCommitCard(activity.data as GitHubCommit);
+  } else if (activity.type === 'merge') {
+    return renderMergeCard(activity.data as GitHubMerge);
+  } else {
+    return renderTicketCard(activity.data as LinearTicket);
+  }
 };

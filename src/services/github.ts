@@ -1,27 +1,12 @@
-import { GitHubCommit } from "../types";
+import { GitHubCommit, GitHubMerge } from "../types";
 
 export class GitHubService {
-  private token: string;
-  private baseUrl = "https://api.github.com";
-  private username = "jonzaro"; // The GitHub username to filter by
-
-  constructor(token: string) {
-    this.token = token;
-  }
+  private proxyUrl = "/.netlify/functions/github-proxy";
+  private username = "jonzaro";
 
   private async request(endpoint: string) {
-    // Check if token exists
-    if (!this.token) {
-      throw new Error("GitHub token is required");
-    }
-
-    const response = await fetch(`${this.baseUrl}${endpoint}`, {
-      headers: {
-        Authorization: `Bearer ${this.token}`, // Changed to Bearer format for GitHub's newer tokens
-        Accept: "application/vnd.github.v3+json",
-        "X-GitHub-Api-Version": "2022-11-28", // Adding explicit API version
-      },
-    });
+    const url = `${this.proxyUrl}?path=${encodeURIComponent(endpoint)}`;
+    const response = await fetch(url);
 
     if (!response.ok) {
       const errorText = await response.text();
@@ -39,16 +24,14 @@ export class GitHubService {
 
     for (const repo of repositories) {
       try {
-        // Fetch commits by the specific author
+        const perPage = Math.ceil(limit / repositories.length);
         const data = await this.request(
-          `/repos/${repo}/commits?per_page=${Math.ceil(
-            limit / repositories.length
-          )}&author=${this.username}`
+          `/repos/${repo}/commits?per_page=${perPage}&author=${this.username}`
         );
-        // Check if data is an array
+
         const repoCommits: GitHubCommit[] = data.map((commit: any) => ({
           id: commit.sha,
-          message: commit.commit.message.split("\n")[0], // First line only
+          message: commit.commit.message.split("\n")[0],
           timestamp: commit.commit.author.date,
           repository: repo,
           url: commit.html_url,
@@ -65,6 +48,49 @@ export class GitHubService {
     }
 
     return commits.sort(
+      (a, b) =>
+        new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+    );
+  }
+
+  async getMergedPRs(
+    repositories: string[],
+    limit = 30
+  ): Promise<GitHubMerge[]> {
+    const merges: GitHubMerge[] = [];
+
+    for (const repo of repositories) {
+      try {
+        const perPage = Math.ceil(limit / repositories.length);
+        const data = await this.request(
+          `/repos/${repo}/pulls?state=closed&sort=updated&direction=desc&per_page=${perPage}`
+        );
+
+        const repoMerges: GitHubMerge[] = data
+          .filter(
+            (pr: any) =>
+              pr.merged_at && pr.user?.login === this.username
+          )
+          .map((pr: any) => ({
+            id: pr.id.toString(),
+            title: pr.title,
+            timestamp: pr.merged_at,
+            repository: repo,
+            url: pr.html_url,
+            number: pr.number,
+            author: {
+              name: pr.user.login,
+              avatar: pr.user.avatar_url,
+            },
+          }));
+
+        merges.push(...repoMerges);
+      } catch (error) {
+        console.error(`Error fetching merged PRs for ${repo}:`, error);
+      }
+    }
+
+    return merges.sort(
       (a, b) =>
         new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
     );
