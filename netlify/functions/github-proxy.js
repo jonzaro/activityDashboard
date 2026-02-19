@@ -14,16 +14,22 @@ exports.handler = async function (event) {
     };
   }
 
-  const apiPath = event.queryStringParameters?.path;
+  // Extract the GitHub API path from the function URL path
+  const functionPrefix = "/.netlify/functions/github-proxy";
+  const apiPath = event.path.replace(functionPrefix, "");
   if (!apiPath) {
     return {
       statusCode: 400,
-      body: JSON.stringify({ error: "Missing path parameter" }),
+      body: JSON.stringify({ error: "Missing API path" }),
     };
   }
 
+  // Reconstruct query string from parameters
+  const queryString = event.rawQuery || "";
+  const githubUrl = `https://api.github.com${apiPath}${queryString ? "?" + queryString : ""}`;
+
   try {
-    const response = await fetch(`https://api.github.com${apiPath}`, {
+    const response = await fetch(githubUrl, {
       headers: {
         Authorization: `Bearer ${token}`,
         Accept: "application/vnd.github.v3+json",

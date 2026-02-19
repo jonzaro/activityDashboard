@@ -5,7 +5,7 @@ export class GitHubService {
   private username = "jonzaro";
 
   private async request(endpoint: string) {
-    const url = `${this.proxyUrl}?path=${encodeURIComponent(endpoint)}`;
+    const url = `${this.proxyUrl}${endpoint}`;
     const response = await fetch(url);
 
     if (!response.ok) {

@@ -13,8 +13,6 @@ export default defineConfig(({ mode }) => {
           server.middlewares.use(
             "/.netlify/functions/github-proxy",
             async (req, res) => {
-              const reqUrl = new URL(req.url || "", "http://localhost");
-              const apiPath = reqUrl.searchParams.get("path");
               const token = env.GITHUB_TOKEN;
 
               if (!token) {
@@ -28,26 +26,18 @@ export default defineConfig(({ mode }) => {
                 return;
               }
 
-              if (!apiPath) {
-                res.statusCode = 400;
-                res.setHeader("Content-Type", "application/json");
-                res.end(
-                  JSON.stringify({ error: "Missing path parameter" })
-                );
-                return;
-              }
+              // req.url is the portion after the middleware mount path
+              // e.g. "/repos/owner/repo/commits?per_page=10"
+              const githubUrl = `https://api.github.com${req.url}`;
 
               try {
-                const response = await fetch(
-                  `https://api.github.com${apiPath}`,
-                  {
-                    headers: {
-                      Authorization: `Bearer ${token}`,
-                      Accept: "application/vnd.github.v3+json",
-                      "X-GitHub-Api-Version": "2022-11-28",
-                    },
-                  }
-                );
+                const response = await fetch(githubUrl, {
+                  headers: {
+                    Authorization: `Bearer ${token}`,
+                    Accept: "application/vnd.github.v3+json",
+                    "X-GitHub-Api-Version": "2022-11-28",
+                  },
+                });
 
                 const data = await response.json();
                 res.statusCode = response.status;
