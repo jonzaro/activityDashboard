@@ -215,6 +215,147 @@ export default defineConfig(({ mode }) => {
           );
         },
       },
+      {
+        name: "ai-report-dev",
+        configureServer(server) {
+          server.middlewares.use(
+            "/.netlify/functions/ai-report",
+            async (req, res) => {
+              if (req.method === "OPTIONS") {
+                res.statusCode = 204;
+                res.setHeader("Access-Control-Allow-Origin", "*");
+                res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+                res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
+                res.end();
+                return;
+              }
+
+              if (req.method !== "POST") {
+                res.statusCode = 405;
+                res.setHeader("Content-Type", "application/json");
+                res.end(JSON.stringify({ error: "Method Not Allowed" }));
+                return;
+              }
+
+              const anthropicKey = env.ANTHROPIC_API_KEY;
+
+              if (!anthropicKey) {
+                res.statusCode = 500;
+                res.setHeader("Content-Type", "application/json");
+                res.end(
+                  JSON.stringify({
+                    error: "ANTHROPIC_API_KEY not set in .env",
+                  })
+                );
+                return;
+              }
+
+              // Read POST body
+              let body = "";
+              for await (const chunk of req) {
+                body += chunk;
+              }
+
+              let parsed;
+              try {
+                parsed = JSON.parse(body);
+              } catch {
+                res.statusCode = 400;
+                res.setHeader("Content-Type", "application/json");
+                res.end(JSON.stringify({ error: "Invalid JSON body" }));
+                return;
+              }
+
+              const { type, activities, teamRoster } = parsed;
+              if (!type || !activities) {
+                res.statusCode = 400;
+                res.setHeader("Content-Type", "application/json");
+                res.end(
+                  JSON.stringify({
+                    error: "Missing required fields: type, activities",
+                  })
+                );
+                return;
+              }
+
+              if (type !== "standup" && type !== "rollup") {
+                res.statusCode = 400;
+                res.setHeader("Content-Type", "application/json");
+                res.end(
+                  JSON.stringify({
+                    error: "Invalid type. Must be 'standup' or 'rollup'",
+                  })
+                );
+                return;
+              }
+
+              try {
+                const activitiesJson = JSON.stringify(activities).slice(
+                  0,
+                  12000
+                );
+                const rosterLine = teamRoster ? `Team members: ${teamRoster.join(", ")}` : "";
+
+                const prompt =
+                  type === "standup"
+                    ? `You are generating a Daily Standup report for a software development team.\n${rosterLine}\n\nEach activity has an "employee" field with the team member's name. Group activities by employee name.\n\nFormat the report as:\n- A brief 1-sentence team overview\n- Then for each team member who has activity, a section with their name as a ## heading, listing what they worked on (based on commit messages, PR titles, and ticket titles in the data). If a member has no activities, note "No recent activity" under their name.\n- End with a brief "Team Focus" note\n\nUse business-friendly language with light technical context. Keep it concise — this is for a quick team sync.\n\nActivities data:\n${activitiesJson}`
+                    : `You are generating a Weekly Rollup report for a software development team.\n${rosterLine}\n\nEach activity has an "employee" field with the team member's name. Group activities by employee name.\n\nFormat the report as:\n- A 2-3 sentence executive summary of the week's accomplishments\n- Then for each team member, a section with their name as a ## heading, summarizing their key contributions. If a member has no activities, note "No recent activity" under their name.\n- A "Key Highlights" section with 3-5 bullet points of the most impactful work\n- End with a brief "Looking Ahead" note\n\nUse business-friendly language with light technical context. This is for stakeholders and team leads.\n\nActivities data:\n${activitiesJson}`;
+
+                const claudeResponse = await fetch(
+                  "https://api.anthropic.com/v1/messages",
+                  {
+                    method: "POST",
+                    headers: {
+                      "x-api-key": anthropicKey,
+                      "anthropic-version": "2023-06-01",
+                      "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                      model: "claude-haiku-4-5-20251001",
+                      max_tokens: 1500,
+                      messages: [
+                        {
+                          role: "user",
+                          content: prompt,
+                        },
+                      ],
+                    }),
+                  }
+                );
+
+                const claudeData = await claudeResponse.json();
+
+                if (claudeData.error) {
+                  res.statusCode = 500;
+                  res.setHeader("Content-Type", "application/json");
+                  res.end(
+                    JSON.stringify({ error: claudeData.error.message })
+                  );
+                  return;
+                }
+
+                const content =
+                  claudeData.content?.[0]?.text ||
+                  "Unable to generate report.";
+
+                res.statusCode = 200;
+                res.setHeader("Content-Type", "application/json");
+                res.end(
+                  JSON.stringify({
+                    content,
+                    generatedAt: new Date().toISOString(),
+                    type,
+                  })
+                );
+              } catch (error: any) {
+                res.statusCode = 500;
+                res.setHeader("Content-Type", "application/json");
+                res.end(JSON.stringify({ error: error.message }));
+              }
+            }
+          );
+        },
+      },
     ],
     define: {
       global: "globalThis",

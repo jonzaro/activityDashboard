@@ -2,7 +2,11 @@ import { GitHubCommit, GitHubMerge } from "../types";
 
 export class GitHubService {
   private proxyUrl = "/.netlify/functions/github-proxy";
-  private username = "jonzaro";
+  private username: string;
+
+  constructor(username = "jonzaro") {
+    this.username = username;
+  }
 
   private async request(endpoint: string) {
     const url = `${this.proxyUrl}${endpoint}`;

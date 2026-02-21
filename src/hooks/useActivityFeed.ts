@@ -7,7 +7,10 @@ import {
 import { GitHubService } from "../services/github";
 import { LinearService } from "../services/linear";
 
-export const useActivityFeed = (config: DashboardConfig) => {
+export const useActivityFeed = (
+  config: DashboardConfig,
+  githubUsername?: string
+) => {
   const [activities, setActivities] = useState<ActivityItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -22,7 +25,7 @@ export const useActivityFeed = (config: DashboardConfig) => {
 
       // Fetch GitHub commits and merges (proxy handles auth server-side)
       if (config.repositories.length > 0) {
-        const githubService = new GitHubService();
+        const githubService = new GitHubService(githubUsername);
 
         const [commits, merges] = await Promise.all([
           githubService.getCommits(config.repositories),
@@ -80,7 +83,7 @@ export const useActivityFeed = (config: DashboardConfig) => {
     } finally {
       setLoading(false);
     }
-  }, [config]);
+  }, [config, githubUsername]);
 
   useEffect(() => {
     fetchActivities();

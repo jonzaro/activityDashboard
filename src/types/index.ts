@@ -41,6 +41,7 @@ export interface ActivityItem {
   type: "commit" | "merge" | "ticket";
   timestamp: string;
   data: GitHubCommit | GitHubMerge | LinearTicket;
+  employeeId?: string;
 }
 
 export interface FilterOptions {
