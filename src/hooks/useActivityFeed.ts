@@ -24,7 +24,7 @@ export const useActivityFeed = (
       const allActivities: ActivityItem[] = [];
 
       // Fetch GitHub commits and merges (proxy handles auth server-side)
-      if (config.repositories.length > 0) {
+      if (config.repositories.length > 0 && githubUsername) {
         const githubService = new GitHubService(githubUsername);
 
         const [commits, merges] = await Promise.all([
